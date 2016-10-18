@@ -7,3 +7,12 @@ Competition url: https://www.kaggle.com/c/allstate-claims-severity
 
 Folder: AllstateClaimSeverity
 
+My solution: https://www.kaggle.com/jiashenliu/allstate-claims-severity/different-classifier-showcase-and-question
+
+## Twitter US Airline Sentiment
+
+Dataset url: https://www.kaggle.com/crowdflower/twitter-airline-sentiment
+
+Folder: TwitterUSAirlineSentiment
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/crowdflower/twitter-airline-sentiment/how-can-we-predict-the-sentiment-by-tweets
