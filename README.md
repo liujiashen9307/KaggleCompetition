@@ -25,5 +25,5 @@ Folder: TechCrunch
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/thibalbo/techcrunch-posts-compilation/a-small-personalized-recommending-system/
 
-**(A small, personalized recommending system is designed and published.)
+**(A small, personalized recommending system is designed and published.)**
 
