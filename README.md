@@ -16,3 +16,14 @@ Dataset url: https://www.kaggle.com/crowdflower/twitter-airline-sentiment
 Folder: TwitterUSAirlineSentiment
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/crowdflower/twitter-airline-sentiment/how-can-we-predict-the-sentiment-by-tweets
+
+## TechCrunch Posts Compilation
+
+Dataset url: https://www.kaggle.com/thibalbo/techcrunch-posts-compilation
+
+Folder: TechCrunch
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/thibalbo/techcrunch-posts-compilation/a-small-personalized-recommending-system/
+
+**(A small, personalized recommending system is designed and published.)
+
