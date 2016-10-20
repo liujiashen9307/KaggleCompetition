@@ -27,3 +27,10 @@ My Analysis: https://www.kaggle.com/jiashenliu/d/thibalbo/techcrunch-posts-compi
 
 **(A small, personalized recommending system is designed and published.)**
 
+## 2016 US Presidential Debates
+
+Dataset url: https://www.kaggle.com/mrisdal/2016-us-presidential-debates
+
+Folder: Presidential Debates
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/mrisdal/2016-us-presidential-debates/is-trump-always-interrupted
