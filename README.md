@@ -42,3 +42,11 @@ Dataset url: https://www.kaggle.com/stackoverflow/pythonquestions
 Folder: Stack-overflow-python
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/stackoverflow/pythonquestions/if-we-treat-stack-overflow-as-a-social-network/run/407831
+
+## U.S.-Opiate-Prescriptions
+
+Folder: U.S.-Opiate-Prescriptions
+
+Dataset url:https://www.kaggle.com/apryor6/us-opiate-prescriptions
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/apryor6/us-opiate-prescriptions/quick-and-dirty-attempt-on-voting-classifier/
