@@ -1,5 +1,5 @@
 # KaggleCompetition
-Code hub for the kaggle competitions I have participated in.
+Code hub for the kaggle competitions/Kernel blogs I have participated in/contributed to.
 
 ## Allstate Claims Severity
 
@@ -50,3 +50,11 @@ Folder: U.S.-Opiate-Prescriptions
 Dataset url:https://www.kaggle.com/apryor6/us-opiate-prescriptions
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/apryor6/us-opiate-prescriptions/quick-and-dirty-attempt-on-voting-classifier/
+
+## 911 Emergency Calls
+
+Folder: 911-Calls
+
+Dataset url: https://www.kaggle.com/mchirico/montcoalert/kernels
+
+My Analysis: http://rpubs.com/ljs93/GoogleVis911
