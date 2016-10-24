@@ -1,0 +1,319 @@
+---
+title: "911 Emergency"
+author: "Jason Liu"
+date: "Oct 24,2016"
+output: html_document
+---
+## Analyzing and Visualizing 911 Calls by GoogleVis
+
+This kernel serves the purpose of presenting quick data analytic with Google Visulization. The analysis will mainly focus on two aspects: Geographical information and time stamp of the calls.
+
+### Fire up
+
+```{r,message=FALSE, warning=FALSE}
+library(googleVis)
+library(sqldf)
+library(ggmap)
+library(ggplot2)
+Sys.setenv(LANG = "en")
+Sys.setlocale("LC_TIME", "C")
+data<-read.csv('911.csv')
+df<-data[,c('lat','lng','title','timeStamp')]
+summary(df)
+```
+
+### Data Pre-processing
+
+Before analysis, we first perform data preprocessing step for a more neat dataset. First, we split the title of the event.
+
+```{r, echo=FALSE}
+df<-data.frame(df,Event_type=NA,Event_detail=NA)
+df$Event_type<-sapply(df$title,function(x) strsplit(as.character(x),':')[[1]][1])
+df$Event_detail<-sapply(df$title,function(x) strsplit(as.character(x),':')[[1]][2])
+```
+
+
+Next, we will deal with timeStamp of the 911 calls.
+
+```{r,message=FALSE,warning=FALSE}
+df<-data.frame(df,Date=NA,Time=NA,Hour=NA,Days=NA,Period=NA)
+df$Date<-sapply(df$timeStamp,function(x) strsplit(as.character(x),' ')[[1]][1])
+df$Time <- sapply(df$timeStamp,function(x) strsplit(as.character(x),' ')[[1]][2] )
+df$Hour<-sapply(df$Time,function(x) as.numeric(strsplit(as.character(x),':')[[1]][1]))
+df$Period<-sapply(df$Hour,function(x){
+  nu<-x
+  if(nu>6&&nu<=12){
+   'Morining'
+  }else if(nu>12&&nu<=18){
+    'Afternoon'
+  }else if(nu>18&&nu<=24){
+     'Evening'
+  }else{
+    'Midnight'
+    }
+}
+)
+c<-as.Date(df$Date)
+df$Date<-c
+cc<-weekdays(c)
+df$Days<-cc
+```
+
+Then, the data are all in the form we want. I will divide the analytics in terms of the type of events so the whole procedure will be transparent and efficient.
+
+### Build functions for analytic
+
+In order to make the analysis and plot more direct and efficient, I choose to wrap up the analyzes into differnt functions so that the subsquent procedures will be boosted.
+
+**A: Where do these calls happen? **
+
+```{r,message=FALSE,warning=FALSE}
+map_d<-qmap('Philadelphia', zoom = 9, maptype = 'hybrid')
+Map<-function(item){
+  color<-list('EMS'='Yellow','Fire'='red','Traffic'='blue')
+  if(item=='All'){
+    tmp<-df
+  }else{
+    tmp<-df[df$Event_type==item,]
+  }
+  if(item=='All'){
+  plt<-map_d + geom_point(data = tmp, aes(x = lng, y = lat,color=Event_type), alpha=0.5)
+  }
+  else{
+  plt<-map_d + geom_point(data = tmp, aes(x = lng, y = lat), color=color[item], alpha=0.5) 
+  }
+  return(plot(plt))
+}
+
+```
+
+**B: Calls among days of a week**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+days<-function(item){
+if(item=='All'){
+    tmp<-df
+  }else{
+    tmp<-df[df$Event_type==item,]
+  }
+tmp<-sqldf('SELECT Days,count(Days) as freq from tmp group by Days')
+dayp<-gvisColumnChart(tmp,options = list(width=800,height=600))
+return(dayp)
+}
+```
+
+**C: Calls among periods**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+period<-function(item){
+if(item=='All'){
+    tmp<-df
+  }else{
+    tmp<-df[df$Event_type==item,]
+  }
+tmp<-sqldf('SELECT Period,count(Period) as freq from tmp group by Period')
+periodp<-gvisPieChart(tmp,options = list(width=600,height=400))
+return(periodp)
+}
+```
+
+**D: Calls among date**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+DT<-function(item){
+  if(item=='All'){
+    tmp<-df
+  }else{
+    tmp<-df[df$Event_type==item,]
+  }
+tmp<-sqldf('SELECT Date,count(Date) as freq from tmp group by Date')
+CalD <- gvisCalendar(tmp,datevar="Date", 
+                    numvar="freq",
+                    options=list(
+                      title="Calls Records Around the Year",
+                      width=800,
+                      height=440,
+                      calendar="{yearLabel: { fontName: 'Times-Roman',
+                               fontSize: 32, color: '#1A8763', bold: true},
+                               cellSize: 20,
+                               cellColor: { stroke: 'red', strokeOpacity: 0.2 },
+                               focusedCellColor: {stroke:'red'}}")
+                    )
+return(CalD)
+}
+```
+
+**E: Calls among Hours**
+
+```{r,message=FALSE,warning=FALSE}
+HR<-function(item){
+  if(item=='All'){
+    tmp<-df
+  }else{
+    tmp<-df[df$Event_type==item,]
+  }
+tmp<-sqldf('SELECT Hour,count(Hour) as freq from tmp group by Hour')
+HRP<-gvisColumnChart(tmp,options = list(width=800,height=400))
+return(HRP)
+}
+```
+
+**F:The most frequent calling reasons**
+
+```{r,message=FALSE,warning=FALSE}
+RE<-function(item){
+tmp<-df[df$Event_type==item,] 
+tmp<-sqldf('SELECT Event_detail,count(Event_detail) as freq from tmp group by Event_detail order by freq desc') 
+Table <- gvisTable(tmp,options=list(page='enable',width=300,height=600))
+return(Table)
+}
+```
+
+### Now use Google Visulization to see what we want
+
+#### A: Explore All Types of Events
+
+**A: Where do they happen**
+
+```{r,message=FALSE,warning=FALSE}
+Map('All')
+```
+
+**B:Calls among the week**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+days('All')
+```
+
+**C:Calls among Day**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+period('All')
+```
+
+**D: Date Records of the call**
+
+```{r results='asis',message=FALSE ,warning=FALSE}
+DT('All')
+```
+
+**E:Calls in hours**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+HR('All')
+```
+
+#### EMS Visulization
+
+**A: Where do they happen**
+
+```{r,message=FALSE,warning=FALSE}
+Map('EMS')
+```
+
+**B:Calls among the week**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+days('EMS')
+```
+
+**C:Calls among Day**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+period('EMS')
+```
+
+**D: Date Records of the call**
+
+```{r results='asis',message=FALSE ,warning=FALSE}
+DT('EMS')
+```
+
+**E:Calls in hours**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+HR('EMS')
+```
+
+**F: Details of Calls**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+RE('EMS')
+```
+
+#### Traffic Visulization
+
+**A: Where do they happen**
+
+```{r,message=FALSE,warning=FALSE}
+Map('Traffic')
+```
+
+**B:Calls among the week**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+days('Traffic')
+```
+
+**C:Calls among Day**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+period('Traffic')
+```
+
+**D: Date Records of the call**
+
+```{r results='asis',message=FALSE ,warning=FALSE}
+DT('Traffic')
+```
+
+**E:Calls in hours**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+HR('Traffic')
+```
+
+**F: Details of Calls**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+RE('Traffic')
+```
+
+#### Fire Visulization
+
+**A: Where do they happen**
+
+```{r,message=FALSE,warning=FALSE}
+Map('Fire')
+```
+
+**B:Calls among the week**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+days('Fire')
+```
+
+**C:Calls among Day**
+
+```{r results='asis',message=FALSE,warning=FALSE}
+period('Fire')
+```
+
+**D: Date Records of the call**
+
+```{r results='asis',message=FALSE ,warning=FALSE}
+DT('Fire')
+```
+
+**E:Calls in hours**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+HR('Fire')
+```
+
+**F: Details of Calls**
+
+```{r results='asis',message=FALSE, warning=FALSE}
+RE('Fire')
+```
+
