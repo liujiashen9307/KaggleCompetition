@@ -1,0 +1,258 @@
+---
+title: "Whose income will exceed 50K?"
+author: "Jason Liu"
+date: "Oct 25,2015"
+output: 
+    html_document: 
+     fig_height: 7
+     fig_width: 10
+     theme: journal
+     toc: yes
+---
+# Introduction
+
+In this kernel blog, I want to explore what kinds of employees will have more possibilities to earn more than 50K USD per year.
+
+# Read Data
+
+```{r,message=FALSE,warning=FALSE}
+library(dplyr)
+library(sqldf)
+library(ggplot2)
+library(reshape2)
+library(gridExtra)
+df<-read.csv('adult.csv')
+summary(df)
+df$income<-ifelse(df$income=='>50K',1,0)
+```
+
+# Explore Categorical Data
+
+In this chapter, we will have a look into: what proportion of people earn more than 50K within different: workclass, education, martial status, race ,and sex.
+
+## A: Work Class
+
+```{r,message=FALSE,warning=FALSE}
+df$workclass<-ifelse(df$workclass=='?','Unknown',as.character(df$workclass))
+Work_class<-sqldf('SELECT workclass, count(workclass) as Count 
+                  ,sum(income) as Above from df group by workclass')
+Workclass<-melt(Work_class,id.vars = 'workclass')
+table<-data.frame(Class=Work_class$workclass, Proportion=Work_class$Above/Work_class$Count)
+gg<-ggplot(Workclass,aes(x=workclass,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid within different classes')
+tbl <- tableGrob(t(table), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+```
+
+Brief Conclusion: The private sector, which has the most people work in, has the largest number of population that earn more than 50K per year. However, in terms of the proportion, the self-employed people are the winner.
+
+## B: Education
+
+```{r,message=FALSE,warning=FALSE}
+education<-sqldf('SELECT education, count(education) as Count 
+                  ,sum(income) as Above from df group by education')
+edu<-melt(education,id.vars = 'education')
+table<-data.frame(Class=education$education, Proportion=education$Above/education$Count)
+gg<-ggplot(edu,aes(x=education,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid within different education level')
+tbl <- tableGrob(t(table), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+```
+
+Brief Conclusion: Higher education level may result in a higher possibility of well-paid employment. But it must be a tough process as most people cannot go through the process.
+
+## C: Martial Status
+
+```{r,message=FALSE,warning=FALSE}
+colnames(df)[6]<-'Marital'
+marital<-sqldf('SELECT Marital, count(Marital) as Count 
+                  ,sum(income) as Above from df group by Marital')
+mar<-melt(marital,id.vars = 'Marital')
+table<-data.frame(Marital=marital$Marital, Proportion=marital$Above/marital$Count)
+gg<-ggplot(mar,aes(x=Marital,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid within different marital status')
+tbl <- tableGrob(t(table), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+
+```
+
+Brief Conclusion: See? A good marital relationship is also a key for earning more money.
+
+## D: Race
+
+```{r,message=FALSE,warning=FALSE}
+race<-sqldf('SELECT race, count(race) as Count 
+                  ,sum(income) as Above from df group by race')
+rac<-melt(race,id.vars = 'race')
+table<-data.frame(race=race$race, Proportion=race$Above/race$Count)
+gg<-ggplot(rac,aes(x=race,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid within different races')
+tbl <- tableGrob(t(table), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+
+```
+
+Bref Conclusion: Statistically (only), the Whites are always advantageous in salary.
+
+## E: Sex
+
+
+```{r,message=FALSE,warning=FALSE}
+sex<-sqldf('SELECT sex, count(sex) as Count 
+                  ,sum(income) as Above from df group by sex')
+se<-melt(sex,id.vars = 'sex')
+table<-data.frame(sex=sex$sex, Proportion=sex$Above/sex$Count)
+gg<-ggplot(se,aes(x=sex,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid within different sexes')
+tbl <- tableGrob(t(table), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+
+```
+
+Brief Conclusion: Male employees are more competitive in terms of salary, when you only look at the data.
+
+# Explore Contineous Variable
+
+## Capital Loss
+
+```{r,message=FALSE,warning=FALSE}
+colnames(df)[12]<-'CapitalLoss'
+gg<-qplot(CapitalLoss, data=df, geom="histogram")+theme_bw()+ggtitle('Histogram of Capital Loss')
+gg
+```
+
+Brief Conclusion: The capital loss may not be useful for classification as it is quite skewed and mostly concentrated at zero value.
+## Working Hours
+
+```{r,message=FALSE, warning=FALSE}
+colnames(df)[13]<-'Hours'
+gg<-qplot(Hours, data=df, geom="histogram")+theme_bw()+ggtitle('Histogram of Working Hours')
+gg
+df2<-df
+df2$HourJ<-ifelse(df2$Hours<=40,'NormalWorkLoad','HugeWorkLoad')
+wl<-sqldf('SELECT HourJ as WorkLoad, count(HourJ) as Count, sum(income) as Above from df2 group by HourJ')
+wlt<-melt(wl,id.vars = 'WorkLoad')
+wl$Percentage<-wl$Above/wl$Count
+gg<-ggplot(wlt,aes(x=WorkLoad,y=value,fill=variable))+geom_bar(stat = 'identity',position = 'stack')+theme_bw()+scale_fill_manual(values = c('red','green'))+theme(axis.text.x = element_text(angle = 45, hjust = 1))+ggtitle('Proportions of above-paid with different Work Load')
+tbl <- tableGrob(t(wl[,c(1,4)]), rows=NULL)
+grid.arrange(tbl, gg,
+             nrow=2,
+             as.table=TRUE,
+             heights=c(1,4))
+```
+
+Brief Conclusion: Work harder, life better, isn't it?
+
+# Classification
+
+We first pre-process the data frame.
+
+```{r,message=FALSE,warn=FALSE}
+colnames(df)[14]<-'Country'
+df3<-df
+cato<-c('education','Marital','occupation','relationship','race','sex','Country')
+for(each in cato){
+  df3[,each]<-as.integer(df3[,each])
+}
+```
+
+```{r,message=TRUE,warning=TRUE}
+class<-unique(df$workclass)
+for(i in 1:length(df3$age)){
+  df3$workclass[i]<-which(class %in% df3$workclass[i])
+}
+df3$workclass<-as.numeric(df3$workclass)
+```
+
+```{r,message=FALSE,warning=FALSE}
+library(caret)
+set.seed(1000)
+df3$income<-as.factor(as.character(df3$income))
+intrain<- createDataPartition(df3$income,p=0.7,list = FALSE)
+train<- df3[intrain,]
+test <- df3[-intrain,]
+benchmark<-1- sum(df3$income)/length(df3[,1])
+benchmark
+```
+
+**So: 0.76 will be the accuracy of classification when I guess all people cannot earn a salary more than 50K. This would be the benchmark for model evaluation.**
+
+## Decision Tree
+
+```{r,message=FALSE,warning=FALSE}
+library(rpart)
+library(rattle)
+treeFit<- rpart(income~.,data=train,method = 'class')
+print(treeFit)
+fancyRpartPlot(treeFit)
+Prediction1<- predict(treeFit,newdata=test[-15],type = 'class')
+TreeAcu<-confusionMatrix(Prediction1,test$income)$overall[1]
+TreeAcu
+```
+
+
+## Logistic Regression
+
+```{r,message=FALSE,warning=FALSE}
+lg<-glm(income ~.,family=binomial(link='logit'),data=train)
+Prediction2<- predict(lg,newdata=test[-15],type = 'response')
+Pred<- ifelse(Prediction2>0.5,1,0)
+lgAcu<-confusionMatrix(Pred,test$income)$overall[1]
+lgAcu
+```
+
+## Random Forest
+
+```{r,message=FALSE,warning=FALSE}
+library(randomForest)
+set.seed(32423)
+rfFit<- randomForest(income~.,data= train)
+print(rfFit)
+Prediction3<- predict(rfFit,newdata = test[,-15],type = 'class')
+rfAcu<-confusionMatrix(Prediction3,test$income)$overall[1]
+rfAcu
+```
+
+## Stacked Model
+
+```{r,message=FALSE,warning=FALSE}
+predDF<- data.frame(Prediction1,Prediction2,Prediction3,outcome=test$income)
+combModFit<- train(outcome~.,method='gbm',data=predDF,verbose=FALSE)
+Prediction_Comb<- predict(combModFit,predDF)
+stAcu<- confusionMatrix(Prediction_Comb,test$income)$overall[1]
+stAcu
+```
+
+## Performace Comparison
+
+Then we can compare the performance of models by their accuracies.
+
+```{r,message=FALSE,warning=FALSE}
+Accuracy<-data.frame(Model=c('Decision Tree','Logistic Regression','Random Forest','Stacked Model'),Accuracy=c(TreeAcu,lgAcu,rfAcu,stAcu))
+gg<-ggplot(Accuracy,aes(x=Model,y=Accuracy,fill=Model))+geom_bar(stat = 'identity')+theme_bw()+ggtitle('Accuracies of Models')+geom_hline(yintercept = benchmark,color='red')
+gg
+```
+
+The red line represents the accuracy of guessing everyone earn less than 50K per year.
+
+We use the logistic regression model to see which features contribute more to the income.
+
+```{r,message=FALSE,warning=FALSE}
+summary(lg)
+```
+
+We can see that **Maritial statues, Working Hours and Sex** really matters if you want to earn more than 50K per year. In contrary, the working class is not that important. Generally speaking, you will get equal opportunity if you work hard enough, no matter what kinds of job are you doing.
+
+# Conclusion
+
+The analysis can be divided into two parts, one serves the purpose of exploratory analysis and the other presents several classification models. In general, we can see what really contributes to your class of income in US, and some issues can really be revealed by this data set.
