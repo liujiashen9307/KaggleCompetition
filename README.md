@@ -66,3 +66,11 @@ Folder: Adult Census
 Dataset url: https://www.kaggle.com/uciml/adult-census-income
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/uciml/adult-census-income/who-can-earn-more-than-50k-per-year
+
+## Human Activity Recognition
+
+Folder: Human Activity
+
+Dataset url: https://www.kaggle.com/uciml/human-activity-recognition-with-smartphones/
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/uciml/human-activity-recognition-with-smartphones/model-based-feature-selection-newbie/
