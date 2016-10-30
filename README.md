@@ -74,3 +74,11 @@ Folder: Human Activity
 Dataset url: https://www.kaggle.com/uciml/human-activity-recognition-with-smartphones/
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/uciml/human-activity-recognition-with-smartphones/model-based-feature-selection-newbie/
+
+## Video Game Sales
+
+Folder: Game Data
+
+Dataset url:https://www.kaggle.com/gregorut/videogamesales/kernels
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/gregorut/videogamesales/visualizing-data-set-by-plot-ly
