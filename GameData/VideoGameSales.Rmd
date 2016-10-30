@@ -1,0 +1,605 @@
+---
+title: "Visualizing Game Sales"
+author: "Jason Liu"
+date: "Oct 29,2016"
+output: 
+     html_document:
+            toc: true
+            highlight: zenburn
+            fig_height: 7
+            fig_width: 10
+            theme: journal
+---
+# Introduction
+
+The motivation of this Kernel is to show and practice exploratory analysis of data set. Thanks for the contribution from **GregorySmith**. In order to better visualize the data, I choose to use package **plotly** to creat interactive plots.
+
+# Read Data
+
+```{r,message=FALSE,warning=FALSE}
+library(sqldf)
+library(fmsb)
+library(plotly)
+df<-read.csv('vgsales.csv')
+df[df=="N/A"]<-NA
+df<-df[complete.cases(df),]
+df$Year<-as.numeric(as.character(df$Year))
+df<-df[df$Year<=2016,]
+summary(df)
+```
+
+# Explore Sales by Year and Platform {.tabset}
+
+```{r,message=FALSE,warning=FALSE}
+ByYear<-sqldf("SELECT Platform, Year, sum(NA_Sales) as AME, sum(EU_Sales) as EU,sum(JP_Sales) as JP, sum(Other_Sales) as Other, sum(Global_Sales) as Global from df group by Platform, Year order by Year,Platform")
+
+```
+
+## All Platforms
+
+```{r results='asis',message=FALSE,warning=FALSE}
+All<- sqldf("SELECT Year, sum(NA_Sales) as AME, sum(EU_Sales) as EU,sum(JP_Sales) as JP, sum(Other_Sales) as Other, sum(Global_Sales) as Global from df group by Year order by Year")
+
+plot_ly(y=All$EU,x=All$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=All$AME,x=All$Year,name='American Sale',type='lines')%>%
+  add_trace(y=All$Global,x=All$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=All$JP,x=All$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=All$Other,x=All$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in All Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+
+
+```
+
+## DS
+
+```{r results='asis',message=FALSE,warning=FALSE}
+DS<-ByYear[ByYear$Platform=='DS',]
+plot_ly(y=DS$EU,x=DS$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=DS$AME,x=DS$Year,name='American Sale',type='lines')%>%
+  add_trace(y=DS$Global,x=DS$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=DS$JP,x=DS$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=DS$Other,x=DS$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in DS Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+## PS
+
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS<-ByYear[ByYear$Platform=='PS',]
+plot_ly(y=PS$EU,x=PS$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=PS$AME,x=PS$Year,name='American Sale',type='lines')%>%
+  add_trace(y=PS$Global,x=PS$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=PS$JP,x=PS$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=PS$Other,x=PS$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in PS Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+
+## PS2
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS2<-ByYear[ByYear$Platform=='PS2',]
+plot_ly(y=PS2$EU,x=PS2$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=PS2$AME,x=PS2$Year,name='American Sale',type='lines')%>%
+  add_trace(y=PS2$Global,x=PS2$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=PS2$JP,x=PS2$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=PS2$Other,x=PS2$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in PS2 Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+## PS3
+
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS3<-ByYear[ByYear$Platform=='PS3',]
+plot_ly(y=PS3$EU,x=PS3$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=PS3$AME,x=PS3$Year,name='American Sale',type='lines')%>%
+  add_trace(y=PS3$Global,x=PS3$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=PS3$JP,x=PS3$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=PS3$Other,x=PS3$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in PS3 Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+## Wii
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Wii<-ByYear[ByYear$Platform=='Wii',]
+plot_ly(y=Wii$EU,x=Wii$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=Wii$AME,x=Wii$Year,name='American Sale',type='lines')%>%
+  add_trace(y=Wii$Global,x=Wii$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=Wii$JP,x=Wii$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=Wii$Other,x=Wii$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in Wii Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+## X360
+
+```{r results='asis',message=FALSE,warning=FALSE}
+X360<-ByYear[ByYear$Platform=='X360',]
+plot_ly(y=X360$EU,x=X360$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=X360$AME,x=X360$Year,name='American Sale',type='lines')%>%
+  add_trace(y=X360$Global,x=X360$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=X360$JP,x=X360$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=X360$Other,x=X360$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in X360 Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+## PSP
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PSP<-ByYear[ByYear$Platform=='PSP',]
+plot_ly(y=PSP$EU,x=PSP$Year,type='lines',name='Europe Sale')%>%
+  add_trace(y=PSP$AME,x=PSP$Year,name='American Sale',type='lines')%>%
+  add_trace(y=PSP$Global,x=PSP$Year,name='Global Sale',type='lines')%>%
+  add_trace(y=PSP$JP,x=PSP$Year,name='Japen Sales',type='lines')%>%
+  add_trace(y=PSP$Other,x=PSP$Year,name='Other Regions',type='lines')%>%
+  layout(title = "Sales in PSP Platform",
+         scene = list(
+           xaxis = list(title = "Year"), 
+           yaxis = list(title = "Sales")))
+```
+
+# Explore Sales by Region and Platform {.tabset}
+
+## Global
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Main_platform<-c('DS','PS','PS2','PS3','Wii','X360','PSP')
+ByRegion<-sqldf("SELECT Platform,sum(NA_Sales) as AME, sum(EU_Sales) as EU,sum(JP_Sales) as JP, sum(Other_Sales) as Other, sum(Global_Sales) as Global from df group by Platform")
+JP<-sum(ByRegion[!ByRegion$Platform %in% Main_platform,]$JP)
+AME<-sum(ByRegion[!ByRegion$Platform %in% Main_platform,]$AME)
+EU<-sum(ByRegion[!ByRegion$Platform %in% Main_platform,]$EU)
+Global<-sum(ByRegion[!ByRegion$Platform %in% Main_platform,]$Global)
+Other<-sum(ByRegion[!ByRegion$Platform %in% Main_platform,]$Other)
+New_row<-data.frame(Platform='Others',AME=AME,EU=EU,JP=JP,Other=Other,Global=Global)
+ByRegion<-ByRegion[ByRegion$Platform%in%Main_platform,]
+ByRegion<-rbind(ByRegion,New_row)
+Global<-ByRegion[,c('Platform','Global')]
+plot_ly(labels=Global$Platform,values=Global$Global,type='pie') %>%
+  layout(title = 'Global Sales by Platform',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+## North America
+
+```{r results='asis',message=FALSE,warning=FALSE}
+AME<-ByRegion[,c('Platform','AME')]
+plot_ly(labels=AME$Platform,values=AME$AME,type='pie') %>%
+  layout(title = 'North America Sales by Platform',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+## Europe
+
+```{r results='asis',message=FALSE,warning=FALSE}
+EU<-ByRegion[,c('Platform','EU')]
+plot_ly(labels=EU$Platform,values=EU$EU,type='pie') %>%
+  layout(title = ' Europe Sales by Platform',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+## Japan
+
+
+```{r results='asis',message=FALSE,warning=FALSE}
+JP<-ByRegion[,c('Platform','JP')]
+plot_ly(labels=JP$Platform,values=JP$JP,type='pie') %>%
+  layout(title = 'Japan Sales by Platform',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+## Other Regions
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Other<-ByRegion[,c('Platform','Other')]
+plot_ly(labels=Other$Platform,values=Other$Other,type='pie') %>%
+  layout(title = ' Sales of other regions by Platform',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+# Explore Sales By Genere
+
+## By Region and Genre{.tabset}
+
+### Global
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Region_Genre<- sqldf("SELECT Genre,sum(NA_Sales) as AME, sum(EU_Sales) as EU,sum(JP_Sales) as JP, sum(Other_Sales) as Other, sum(Global_Sales) as Global from df group by Genre")
+Global<-Region_Genre[,c('Genre','Global')]
+plot_ly(y=Global$Global,x=Global$Genre,type='bar')%>%
+  layout(title = "Global Sales by Genre",
+         scene = list(
+           xaxis = list(title = "Genre"), 
+           yaxis = list(title = "Sales")))
+  
+```
+
+### North America
+
+```{r results='asis',message=FALSE,warning=FALSE}
+AME<-Region_Genre[,c('Genre','AME')]
+plot_ly(y=AME$AME,x=AME$Genre,type='bar')%>%
+  layout(title = "AME Sales by Genre",
+         scene = list(
+           xaxis = list(title = "Genre"), 
+           yaxis = list(title = "Sales")))
+
+```
+
+### Europe
+
+```{r results='asis',message=FALSE,warning=FALSE}
+EU<-Region_Genre[,c('Genre','EU')]
+plot_ly(y=EU$EU,x=EU$Genre,type='bar')%>%
+  layout(title = "EU Sales by Genre",
+         scene = list(
+           xaxis = list(title = "Genre"), 
+           yaxis = list(title = "Sales")))
+
+
+```
+
+### Japan
+
+```{r results='asis',message=FALSE,warning=FALSE}
+JP<-Region_Genre[,c('Genre','JP')]
+plot_ly(y=JP$JP,x=JP$Genre,type='bar')%>%
+  layout(title = "JP Sales by Genre",
+         scene = list(
+           xaxis = list(title = "Genre"), 
+           yaxis = list(title = "Sales")))
+
+
+```
+
+### Other Regions
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Other<-Region_Genre[,c('Genre','Other')]
+plot_ly(y=Other$Other,x=Other$Genre,type='bar')%>%
+  layout(title = "Other Sales by Genre",
+         scene = list(
+           xaxis = list(title = "Genre"), 
+           yaxis = list(title = "Sales")))
+```
+
+## By Platform and Genre{.tabset}
+
+### DS
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Platform_Genere<- sqldf('SELECT Genre, Platform, sum(Global_Sales) as Sales from df group by Genre,Platform')
+Platform_Genere<-Platform_Genere[Platform_Genere$Platform%in%Main_platform,]
+DS<-Platform_Genere[Platform_Genere$Platform=='DS',]
+plot_ly(labels = DS$Genre, values = DS$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on DS",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+### PS
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS<-Platform_Genere[Platform_Genere$Platform=='PS',]
+plot_ly(labels = PS$Genre, values = PS$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on PS",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### PS2
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS2<-Platform_Genere[Platform_Genere$Platform=='PS2',]
+plot_ly(labels = PS2$Genre, values = PS2$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on PS2",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### PS3
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PS3<-Platform_Genere[Platform_Genere$Platform=='PS3',]
+plot_ly(labels = PS3$Genre, values = PS3$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on PS3",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+### Wii
+
+```{r results='asis',message=FALSE,warning=FALSE}
+Wii<-Platform_Genere[Platform_Genere$Platform=='Wii',]
+plot_ly(labels = Wii$Genre, values = Wii$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on Wii",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+### X360
+
+```{r results='asis',message=FALSE,warning=FALSE}
+X360<-Platform_Genere[Platform_Genere$Platform=='X360',]
+plot_ly(labels = X360$Genre, values = X360$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on X360",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+### PSP
+
+```{r results='asis',message=FALSE,warning=FALSE}
+PSP<-Platform_Genere[Platform_Genere$Platform=='PSP',]
+plot_ly(labels = PSP$Genre, values = PSP$Sales,type='pie',hole=0.6) %>%
+  layout(title = "Genre of Games on PSP",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+```
+
+# Explore the top 5 Publishers
+
+```{r,message=FALSE, warning=FALSE}
+Publisher<- sqldf('SELECT Publisher, sum(Global_Sales) as Sales from df group by Publisher order by Sales desc')[c(1:5),]
+print(Publisher[,1])
+```
+
+## Sales across Regions{.tabset}
+
+### Nintendo
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[1,1],]
+frame<-data.frame(Region=c('North America','Europe','Japan','Other Regions'),Sales=c(sum(tmp$NA_Sales),sum(tmp$EU_Sales),sum(tmp$JP_Sales),sum(tmp$Other_Sales)))
+
+plot_ly(labels =frame$Region, values =frame$Sales,type='pie',hole=0.4)%>%
+  layout(title = "Sales Proportion by Regions",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### Electronic Arts
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[2,1],]
+frame<-data.frame(Region=c('North America','Europe','Japan','Other Regions'),Sales=c(sum(tmp$NA_Sales),sum(tmp$EU_Sales),sum(tmp$JP_Sales),sum(tmp$Other_Sales)))
+
+plot_ly(labels =frame$Region, values =frame$Sales,type='pie',hole=0.4)%>%
+  layout(title = "Sales Proportion by Regions",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### Activision
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[3,1],]
+frame<-data.frame(Region=c('North America','Europe','Japan','Other Regions'),Sales=c(sum(tmp$NA_Sales),sum(tmp$EU_Sales),sum(tmp$JP_Sales),sum(tmp$Other_Sales)))
+
+plot_ly(labels =frame$Region, values =frame$Sales,type='pie',hole=0.4)%>%
+  layout(title = "Sales Proportion by Regions",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### Sony
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[4,1],]
+frame<-data.frame(Region=c('North America','Europe','Japan','Other Regions'),Sales=c(sum(tmp$NA_Sales),sum(tmp$EU_Sales),sum(tmp$JP_Sales),sum(tmp$Other_Sales)))
+
+plot_ly(labels =frame$Region, values =frame$Sales,type='pie',hole=0.4)%>%
+  layout(title = "Sales Proportion by Regions",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+### Ubisoft
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[5,1],]
+frame<-data.frame(Region=c('North America','Europe','Japan','Other Regions'),Sales=c(sum(tmp$NA_Sales),sum(tmp$EU_Sales),sum(tmp$JP_Sales),sum(tmp$Other_Sales)))
+
+plot_ly(labels =frame$Region, values =frame$Sales,type='pie',hole=0.4)%>%
+  layout(title = "Sales Proportion by Regions",  showlegend = F,
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+```
+
+## Sales across Platforms{.tabset}
+
+### Nintendo
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[1,1],]
+frame<-sqldf('SELECT Platform, sum(Global_Sales) as Sales from tmp group by Platform')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+### Electronic Arts
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[2,1],]
+frame<-sqldf('SELECT Platform, sum(Global_Sales) as Sales from tmp group by Platform')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+### Activision
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[3,1],]
+frame<-sqldf('SELECT Platform, sum(Global_Sales) as Sales from tmp group by Platform')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+
+```
+
+### Sony
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[4,1],]
+frame<-sqldf('SELECT Platform, sum(Global_Sales) as Sales from tmp group by Platform')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+
+```
+
+### Ubisoft
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[5,1],]
+frame<-sqldf('SELECT Platform, sum(Global_Sales) as Sales from tmp group by Platform')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+## Sales across Genres{.tabset}
+
+### Nintendo
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[1,1],]
+frame<-sqldf('SELECT Genre, sum(Global_Sales) as Sales from tmp group by Genre')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+### Electronic Arts
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[2,1],]
+frame<-sqldf('SELECT Genre, sum(Global_Sales) as Sales from tmp group by Genre')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+### Activision
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[3,1],]
+frame<-sqldf('SELECT Genre, sum(Global_Sales) as Sales from tmp group by Genre')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+
+```
+
+### Sony
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[4,1],]
+frame<-sqldf('SELECT Genre, sum(Global_Sales) as Sales from tmp group by Genre')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+
+```
+
+### Ubisoft
+
+```{r results='asis',message=FALSE,warning=FALSE}
+tmp<-df[df$Publisher==Publisher[5,1],]
+frame<-sqldf('SELECT Genre, sum(Global_Sales) as Sales from tmp group by Genre')
+frame_t<- t(frame[,2:ncol(frame)])
+colnames(frame_t)<-frame[,1]
+frame_t<-as.data.frame(frame_t)
+data=rbind(rep(max(frame$Sales),ncol(frame_t)) , rep(min(frame$Sales),ncol(frame_t)) , frame_t)
+radarchart(data, axistype=1 , 
+pcol=rgb(0.2,0.5,0.5,0.9) , pfcol=rgb(0.2,0.5,0.5,0.5) , plwd=4 , 
+cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,20,5), cglwd=0.8,
+vlcex=0.8 )
+```
+
+
+# Concluding Remark
+
+This Kernel presents some basic exploratory analysis of the data set. Further suggestions and instructions are **extremely welcomed**.
