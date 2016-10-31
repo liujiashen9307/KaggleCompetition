@@ -82,3 +82,13 @@ Folder: Game Data
 Dataset url:https://www.kaggle.com/gregorut/videogamesales/kernels
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/gregorut/videogamesales/visualizing-data-set-by-plot-ly
+
+## Pokemon Go
+
+Folder: PokemonGo
+
+Dataset url: https://www.kaggle.com/semioniy/predictemall
+
+**A shiny app is developed based on the data set**
+
+Shiny App Url: https://jiashenliu.shinyapps.io/PokemonGo/
