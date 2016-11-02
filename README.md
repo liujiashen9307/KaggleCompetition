@@ -92,3 +92,11 @@ Dataset url: https://www.kaggle.com/semioniy/predictemall
 **A shiny app is developed based on the data set**
 
 Shiny App Url: https://jiashenliu.shinyapps.io/PokemonGo/
+
+## Daily News Stock Market
+
+Folder: NewsStock
+
+Dataset url: https://www.kaggle.com/aaron7sun/stocknews
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/aaron7sun/stocknews/presenting-seven-classifiers/
