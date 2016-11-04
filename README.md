@@ -100,3 +100,11 @@ Folder: NewsStock
 Dataset url: https://www.kaggle.com/aaron7sun/stocknews
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/aaron7sun/stocknews/presenting-seven-classifiers/
+
+## World University Ranking
+
+Folder : WorldUniversity
+
+Dataset url: https://www.kaggle.com/mylesoneill/world-university-rankings
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/mylesoneill/world-university-rankings/world-university-ranks-regression
