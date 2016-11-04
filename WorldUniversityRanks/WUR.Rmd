@@ -1,0 +1,587 @@
+---
+title: "Word University Ranking Regression"
+author: "Jason Liu"
+date: "Nov 2, 2016"
+output: 
+    html_document: 
+     fig_height: 15
+     fig_width: 15
+     theme: journal
+     toc: yes
+---
+# Introduction
+
+As a fresh graduate from **Erasmus University Rotterdam**, I am very proud of my school as it provides me with the really good education quality. **EUR** consistently ranked among top tier of world university, and I am really curious about what factors really make a educational insitute ranks higher than the other institutes. Therefore, with this great data from **Myles O'Neill**, I got a chance to perform a exploratory and regression analysis on the different ranks of world univerisity. By the end of this kernel, I will also creat a part that uses funnny radar plots to show the competence of univerisities. Hope you enjoy it.
+
+# Read data and load packages
+
+```{r,message=FALSE,warning=FALSE}
+library(sqldf)
+library(plotly)
+library(radarchart)
+library(tidyr)
+library(reshape)
+library(caret)
+library(data.table)
+library(plyr)
+cwur <- read.csv('cwurData.csv',encoding = 'UTF-8')
+shanghai <- read.csv('shanghaiData.csv',encoding = 'UTF-8')
+times <- read.csv('timesData.csv',encoding = 'UTF-8')
+```
+
+We just use the data of 2015 in order to keep the analysis as tidy and simple as possible. **For CWUR data, it seems that the publishers uses the ranks of aspect to make the columns of sub-scores. In order to transform them to the form of real scores, I make a small modification at below**
+
+```{r,message=FALSE,warning=FALSE}
+cw <- cwur[cwur$year==2015,]
+sh <- shanghai[shanghai$year==2015,]
+tm <- times[times$year==2015,]
+
+## Not Sure
+
+for(i in 5:12){
+  cw[,i]<- 1/cw[,i]
+  cw[,i]<- 100* cw[,i]
+}
+
+```
+
+The data set is not tidy enough. We need to do some preprocessing before the next step.
+
+**Times**
+
+```{r,message=FALSE,warning=FALSE}
+tm$international <- as.numeric(as.character(tm$international))
+tm$income <- sub('-','0',tm$income)
+tm$income <- as.numeric(as.character(tm$income))
+tm$total_score <- as.numeric(as.character(tm$total_score))
+tm$num_students <- gsub(',','',tm$num_students)
+tm$num_students <- as.numeric(as.character(tm$num_students))
+tm$international_students <- as.numeric(as.character(gsub('%','',tm$international_students)))/100
+for(i in 1:length(tm$world_rank)){
+  tm$female_male_ratio<-as.character(tm$female_male_ratio)
+  if(tm$female_male_ratio[i]==''){
+    tm$female_male_ratio[i]<-'0:1'
+  }else{
+    tm$female_male_ratio[i]<-tm$female_male_ratio[i]
+    }
+}
+for(i in 1:length(tm$world_rank)){
+tm$female_male_ratio[i] <- 
+as.numeric(unlist(strsplit(as.character(tm$female_male_ratio[i]),':'))[1])/as.numeric(unlist(strsplit(as.character(tm$female_male_ratio[i]),':'))[2])
+}
+```
+
+
+Then, all data are in the numeric forms and we can start doing some amazing stuff.
+
+# Before Regression: EDA
+
+We use the first 100 universities to perform the regression analysis as it can provide **tidy** data set among three data set.
+
+```{r,message=FALSE,warning=FALSE}
+reg_tm <- tm[1:100,4:13]
+reg_sh <- sh[1:100,4:10]
+reg_cw <- cw[1:100,5:13]
+reg_tm$female_male_ratio <- as.numeric(reg_tm$female_male_ratio)
+```
+
+In order to obtain a more scientific result, we normalize every variable in the data frame.
+
+```{r,message=FALSE,warning=FALSE}
+for(i in 1:9){
+  reg_cw[,i]<- scale(reg_cw[i])
+}
+
+for(i in 1:7){
+  reg_sh[,i]<- scale(reg_sh[i])
+}
+
+for(i in 1:10){
+  reg_tm[,i]<- scale(reg_tm[i])
+}
+
+```
+
+## Feature VS Feature{.tabset}
+
+### Times
+
+```{r,message=FALSE,warning=FALSE, fig.width=15, fig.height=15}
+featurePlot(x = reg_tm[,c(1:5,7:10)], 
+            y = reg_tm[,6], 
+            plot = "pairs",
+            ## Add a key at the top
+            auto.key = list(colureg_tmmns = 3))
+
+```
+
+We can find that features **Research** and **Teaching** may have really great impact on the overall scores. Also. those two features are strongly correlated with each other. Potential multicolinearity is foreseen.
+
+### ShangHai
+
+```{r,message=FALSE,warning=FALSE, fig.width=15, fig.height=15}
+featurePlot(x = reg_sh[,2:7], 
+            y = reg_sh[,1], 
+            plot = "pairs",
+            ## Add a key at the top
+            auto.key = list(columns = 3))
+
+```
+
+The rank from Shanghai has fewer features included. However, **every feature** has direct effect on the total score. 
+
+### CWUR
+
+```{r,message=FALSE,warning=FALSE, fig.width=15, fig.height=15}
+featurePlot(x = reg_cw[,1:8], 
+            y = reg_cw[,9], 
+            plot = "pairs",
+            ## Add a key at the top
+            auto.key = list(columns = 3))
+
+```
+
+Although CWUR takes more factors into account when they are ranking the institutions, they obviously do not have one or two features that have **strong correlations** with the results.
+
+## Feature vs Label (Total Score){.tabset}
+
+### Times
+
+```{r,message=FALSE,warning=FALSE}
+theme1 <- trellis.par.get()
+theme1$plot.symbol$col = rgb(.2, .2, .2, .4)
+theme1$plot.symbol$pch = 16
+theme1$plot.line$col = rgb(1, 0, 0, .7)
+theme1$plot.line$lwd <- 2
+trellis.par.set(theme1)
+featurePlot(x = as.matrix(reg_tm[,c(1:5,7:10)]), 
+            y = reg_tm[,6], 
+            plot = "scatter",
+            ## Add a key at the top
+            layout = c(3, 3),
+            type = c("p", "smooth"),
+            span = .5,
+            auto.key = list(columns = 3))
+```
+
+The **academical scores** are all strongly correlated with the total score. On contrary, some statistics like number of students are not that directly related to the score of University.
+
+### ShangHai
+
+```{r,message=FALSE,warning=FALSE}
+featurePlot(x = as.matrix(reg_sh[,2:7]), 
+            y = reg_sh[,1], 
+            plot = "scatter",
+            ## Add a key at the top
+            layout = c(3, 2),
+            type = c("p", "smooth"),
+            span = .5,
+            auto.key = list(columns = 3))
+
+```
+
+The **best** relevance between total score and sub-scores can be found at ShangHai ranking, although there are also some outliers existing in the data set.
+
+### CWUR
+
+```{r,message=FALSE,warning=FALSE}
+featurePlot(x = as.matrix(reg_cw[,1:8]), 
+            y = reg_cw[,9], 
+            plot = "scatter",
+            ## Add a key at the top
+            layout = c(3, 3),
+            type = c("p", "smooth"),
+            span = .5,
+            auto.key = list(columns = 3))
+
+
+```
+
+With steps of transforming ranks into scores and normalizing all data, the feature-label relationships are still bad. A bad regression model can be foreseen.
+
+# Regression Models
+
+## Times{.tabset}
+
+### Regression Summary
+
+```{r,message=FALSE,warning=FALSE}
+model1 <- lm(total_score~.,reg_tm)
+print(summary(model1))
+```
+
+### Residual Diagnosis
+
+```{r,message=FALSE,warning=FALSE}
+layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE))
+qqnorm(model1$residuals)
+plot(model1$fitted.values,model1$residuals,main="Fitted Value vs Residuals",xlab="Fitted Values",ylab="Residuals",col="red")
+hist(model1$residuals,col="orange",main = "Hisogram of Residuals")
+plot(reg_tm$total_score[1:99],model1$residuals,main="Observations vs Residuals",xlab="Observations",ylab="Residuals",col="blue")
+par(mfrow=c(1,1))
+
+```
+
+## ShangHai{.tabset}
+
+### Regression Summary
+
+```{r,message=FALSE,warning=FALSE}
+model2 <- lm(total_score~.,reg_sh)
+print(summary(model2))
+```
+
+### Residual Diagnosis
+
+```{r,message=FALSE,warning=FALSE}
+layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE))
+qqnorm(model2$residuals)
+plot(model2$fitted.values,model2$residuals,main="Fitted Value vs Residuals",xlab="Fitted Values",ylab="Residuals",col="red")
+hist(model2$residuals,col="orange",main = "Hisogram of Residuals")
+plot(reg_sh$total_score,model2$residuals,main="Observations vs Residuals",xlab="Observations",ylab="Residuals",col="blue")
+par(mfrow=c(1,1))
+```
+
+## CWUR{.tabset}
+
+### Regression Summary
+
+```{r,message=FALSE,warning=FALSE}
+model3 <- lm(score~.,reg_cw)
+print(summary(model3))
+```
+
+### Residual Diagnosis
+
+```{r,message=FALSE,warning=FALSE}
+layout(matrix(c(1,2,3,4), 2, 2, byrow = TRUE))
+qqnorm(model3$residuals)
+plot(model3$fitted.values,model3$residuals,main="Fitted Value vs Residuals",xlab="Fitted Values",ylab="Residuals",col="red")
+hist(model3$residuals,col="orange",main = "Hisogram of Residuals")
+plot(reg_cw$score,model3$residuals,main="Observations vs Residuals",xlab="Observations",ylab="Residuals",col="blue")
+par(mfrow=c(1,1))
+
+```
+
+
+# Short Concluding Remark for Regression Models
+
+## Model Fit
+
+Obviously, the fit of model can be summarized as : **ShangHai > Times > CWUR**. The ranking of Shanghai has always been criticized as it focuses too much on the academical stuff. However, if you check the regression model of Times ranking, you may find that some non-academical variables **do not** play an important role on the scores of university. CWUR? Well, at least their methodology cannot be explained by the simple regression model. 
+
+## Outliers
+
+Yes, Outliers are everywhere, and empirically speaking, outliers also contain important information so I do not touch them. Even in the model of Shanghai where the adjusted R square is perfect, outliers that have obvious **leverage and influence** are identified. So, if the university is not ranked at the elite level (even some at elite level), then it is hard for a Uni to be well-rounded.
+
+## Multicolinearity
+
+Regression is a kind of research method that does not incorporate technical part only. Empirically judging, one already can tell people that there will be multicolinearity existing in the model as some features like 'Teaching' and 'Research' may be strongly correlated with each other in some colleges as the good researchers have great opportunity (or ability) to become a nice teacher. So, multicolinearity will exist, and if you run a feature selection model (like Lasso), few variables could be dropped. But as the data set's dimension is not that high, dropping them may not result in a huge improvement on model fitting.
+
+# For fun: Radar Plots for a better visualization of school's abilities.
+
+## A: Comparison of Average Education Quality in Six Countries
+
+### Times
+
+```{r,message=FALSE,warning=FALSE}
+tm_country <- sqldf('SELECT country, avg(teaching) as teaching, avg(international) as international, avg(research) as research, avg(citations) as citations, avg(income) as income from tm group by country')
+country <- c('Australia', 'China', 'Canada', 'Netherlands','United Kingdom','United States of America')
+tm_radar <- tm_country[tm_country$country %in% country,]
+tmp <- as.data.frame(t(tm_radar[,2:ncol(tm_radar)]))
+colnames(tmp)<-tm_radar[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+```
+
+### ShangHai
+
+```{r,message=FALSE,warning=FALSE}
+tm_c <- tm [,c('university_name','country')]
+sh_new <- join(sh,tm_c)
+sh_new<-sh_new[is.na(sh_new$country)!=TRUE,]
+sh_new[is.na(sh_new)]<- 0
+sh_country <- aggregate(sh_new[5:10], list(sh_new$country), mean)
+colnames(sh_country)[1]<-'country'
+sh_radar <- sh_country[sh_country$country %in% country,]
+tmp_2 <- as.data.frame(t(sh_radar[,2:ncol(sh_radar)]))
+colnames(tmp_2)<-sh_radar[,1]
+tmp_2<- data.frame(item = colnames(sh_radar)[2:ncol(sh_radar)],tmp_2)
+chartJSRadar(scores = tmp_2, maxScale = 60, showToolTipLabel = TRUE)
+```
+
+
+### CWUR
+
+```{r,message=FALSE,warning=FALSE}
+cw_country <- aggregate(cw[,5:12],list(cw$country), mean)
+country2 <- c('Australia', 'China', 'Canada', 'Netherlands','United Kingdom','USA')
+cw_country <- cw_country[cw_country$Group.1 %in% country2,]
+colnames(cw_country)[1]<- 'country'
+tmp_3 <- as.data.frame(t(cw_country[,2:ncol(cw_country)]))
+colnames(tmp_3) <- cw_country$country
+tmp_3 <- data.frame(item = rownames(tmp_3),tmp_3)
+chartJSRadar(scores = tmp_3, maxScale = 3, showToolTipLabel = TRUE)
+```
+
+
+## B: Top 10 Universities in different countries on different ranks
+
+### Times
+
+#### US
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_us <- tm[tm$country=='United States of America',]
+tm_us<- tm_us[1:20,]
+tm_us <- tm_us[,-c(1,3)]
+tmp <- as.data.frame(t(tm_us[,2:6]))
+colnames(tmp)<-tm_us[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### UK
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_uk <- tm[tm$country=='United Kingdom',]
+tm_uk<- tm_uk[1:20,]
+tm_uk <- tm_uk[,-c(1,3)]
+tmp <- as.data.frame(t(tm_uk[,2:6]))
+colnames(tmp)<-tm_uk[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### CA
+
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_ca <- tm[tm$country=='Canada',]
+tm_ca<- tm_ca[1:15,]
+tm_ca <- tm_ca[,-c(1,3)]
+tmp <- as.data.frame(t(tm_ca[,2:6]))
+colnames(tmp)<-tm_ca[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### NL
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_nl <- tm[tm$country=='Netherlands',]
+tm_nl <- tm_nl[,-c(1,3)]
+tmp <- as.data.frame(t(tm_nl[,2:6]))
+colnames(tmp)<-tm_nl[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### CN
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_cn <- tm[tm$country=='China',]
+tm_cn <- tm_cn[,-c(1,3)]
+tmp <- as.data.frame(t(tm_cn[,2:6]))
+colnames(tmp)<-tm_cn[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### AU
+
+
+```{r,message=FALSE, warning=FALSE}
+
+tm_au <- tm[tm$country=='Australia',]
+tm_au <- tm_au[,-c(1,3)]
+tmp <- as.data.frame(t(tm_au[,2:6]))
+colnames(tmp)<-tm_au[,1]
+tmp<- data.frame(item = colnames(tm_radar)[2:ncol(tm_radar)],tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+
+### Shanghai
+
+#### US
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_us <- sh_new[sh_new$country=='United States of America',][1:20,]
+sh_us<- sh_us[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_us[,2:7]))
+colnames(tmp)<-sh_us[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### UK
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_uk <- sh_new[sh_new$country=='United Kingdom',][1:20,]
+sh_uk<- sh_uk[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_uk[,2:7]))
+colnames(tmp)<-sh_uk[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### CA
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_ca <- sh_new[sh_new$country=='Canada',]
+sh_ca<- sh_ca[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_ca[,2:7]))
+colnames(tmp)<-sh_ca[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### NL
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_nl <- sh_new[sh_new$country=='Netherlands',]
+sh_nl<- sh_nl[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_nl[,2:7]))
+colnames(tmp)<-sh_nl[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### CN
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_cn <- sh_new[sh_new$country=='China',]
+sh_cn<- sh_cn[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_cn[,2:7]))
+colnames(tmp)<-sh_cn[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+
+#### AU
+
+
+```{r,message=FALSE,warning=FALSE}
+
+sh_au <- sh_new[sh_new$country=='Australia',]
+sh_au<- sh_au[,c(2,5:10)]
+tmp <- as.data.frame(t(sh_au[,2:7]))
+colnames(tmp)<-sh_au[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+### CWUR 
+
+#### US
+
+```{r,message=FALSE,warning=FALSE}
+cw_us <- cw[cw$country=='USA',][1:20,]
+cw_us<- cw_us[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_us[,2:ncol(cw_us)]))
+colnames(tmp)<-cw_us[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 100, showToolTipLabel = TRUE)
+
+```
+
+#### UK
+
+```{r,message=FALSE,warning=FALSE}
+
+cw_uk <- cw[cw$country=='United Kingdom',][1:20,]
+cw_uk<- cw_uk[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_uk[,2:ncol(cw_uk)]))
+colnames(tmp)<-cw_uk[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 50, showToolTipLabel = TRUE)
+```
+
+#### CA
+
+```{r,message=FALSE,warning=FALSE}
+cw_ca <- cw[cw$country=='Canada',]
+cw_ca<- cw_ca[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_ca[,2:ncol(cw_ca)]))
+colnames(tmp)<-cw_ca[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 51, showToolTipLabel = TRUE)
+
+```
+
+#### NL
+
+```{r,message=FALSE,warning=FALSE}
+
+cw_nl <- cw[cw$country=='Netherlands',]
+cw_nl<- cw_nl[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_nl[,2:ncol(cw_nl)]))
+colnames(tmp)<-cw_nl[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 3, showToolTipLabel = TRUE)
+```
+
+#### CN
+
+```{r,message=FALSE,warning=FALSE}
+
+cw_cn <- cw[cw$country=='China',]
+cw_cn<- cw_cn[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_cn[,2:ncol(cw_cn)]))
+colnames(tmp)<-cw_cn[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 5, showToolTipLabel = TRUE)
+
+```
+
+
+#### AU
+
+
+```{r,message=FALSE,warning=FALSE}
+
+cw_au <- cw[cw$country=='Australia',]
+cw_au<- cw_au[,c(2,5:12)]
+tmp <- as.data.frame(t(cw_au[,2:ncol(cw_au)]))
+colnames(tmp)<-cw_au[,1]
+tmp<- data.frame(item = rownames(tmp),tmp)
+chartJSRadar(scores = tmp, maxScale = 3, showToolTipLabel = TRUE)
+
+```
+
+# Evaluate Ranks by those Radar Plot
+
+With only simple data visulization skills, we can also evaluate different ranks in an empirical way. 
+
+**Times** has a more transparent scoring system, with a more evenly distributed score scale. So the radar plot is easy to plot as you do not have to worry about the max scale in your plot. Also, it makes the comparison between countries and between universities more clear. 
+
+**ShangHai** 's scoring scale is also not quite bad, but the shape of China (yeah, **my hometown**) is a little bit skewed at the field of publication. I think the criticism toward this ranking system can be found on the skewed plot as it focuses too much on the academical stuff, which makes the rank not well-rounded enough. 
+
+**CWUR**, well, quite extreme ranking system. I have to mannually adjust the max scale of the radar plot as it makes the good university (Like **Harvard**) extremely better than the competitors. Maybe the problem is caused my **transformation of subscores** (from rank to score), but also considering the result of regression model, the methodology of this rank is not quite interpretable.
+
+
+**Finally** I am quite happy to see my Uni, **Erasmus University Rotterdam** has a good rank on both national and international wides. Although I am currently strugging with **finding a job** in EU, but considering I am not a EU citizen, this is not the fault of my University. Happy with the education I got from there and proud of **EUR**!
