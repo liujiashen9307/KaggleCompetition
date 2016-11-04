@@ -103,7 +103,7 @@ My Analysis: https://www.kaggle.com/jiashenliu/d/aaron7sun/stocknews/presenting-
 
 ## World University Ranking
 
-Folder : WorldUniversity
+Folder : WorldUniversityRanks
 
 Dataset url: https://www.kaggle.com/mylesoneill/world-university-rankings
 
