@@ -108,3 +108,11 @@ Folder : WorldUniversityRanks
 Dataset url: https://www.kaggle.com/mylesoneill/world-university-rankings
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/mylesoneill/world-university-rankings/world-university-ranks-regression
+
+## ISIS Tweets
+
+Folder: ISIS Tweets
+
+Dataset url: https://www.kaggle.com/kzaman/how-isis-uses-twitter
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/kzaman/how-isis-uses-twitter/drawing-network-for-pro-isis-tweets
