@@ -116,3 +116,11 @@ Folder: ISIS Tweets
 Dataset url: https://www.kaggle.com/kzaman/how-isis-uses-twitter
 
 My Analysis: https://www.kaggle.com/jiashenliu/d/kzaman/how-isis-uses-twitter/drawing-network-for-pro-isis-tweets
+
+## Forest Cover Predict
+
+Folder: Forest-Cover
+
+Dataset url: https://www.kaggle.com/uciml/forest-cover-type-dataset
+
+My Analysis : https://www.kaggle.com/jiashenliu/d/uciml/forest-cover-type-dataset/random-forest-with-feature-selection-0-95-accuracy/
