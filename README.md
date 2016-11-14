@@ -124,3 +124,11 @@ Folder: Forest-Cover
 Dataset url: https://www.kaggle.com/uciml/forest-cover-type-dataset
 
 My Analysis : https://www.kaggle.com/jiashenliu/d/uciml/forest-cover-type-dataset/random-forest-with-feature-selection-0-95-accuracy/
+
+## Baboon Mating
+
+Folder: Baboon-Mating
+
+Dataset url:https://www.kaggle.com/dryad/baboon-mating
+
+My Analysis: https://www.kaggle.com/jiashenliu/d/dryad/baboon-mating/explore-mating-behavior
