@@ -1,0 +1,155 @@
+---
+title: "Infographic Data"
+author: "Jason Liu"
+date: "Nov 15,2016"
+output: 
+     html_document:
+            toc: true
+            highlight: zenburn
+            fig_height: 40
+            fig_width: 24
+            theme: journal
+---
+# 0: Brief Intro
+
+Although I am familar with data visulization in R, I am still a newbie toward the area of Infographic. However, I am really happy to learn and explore this area. Following stuff are done with the guidance from the R blog. I will attach the link of blog below so you can also follow this tutorial and create your own infographic.
+
+https://www.r-bloggers.com/r-how-to-layout-and-design-an-infographic/
+
+
+# 1: Load data, packages and select required features
+
+```{r,message=FALSE,warning=FALSE}
+library(grid)
+library(useful)
+library(ggplot2)
+library(gridExtra)
+library(sqldf)
+df <- read.csv('2016-FCC-New-Coders-Survey-Data.csv')
+columns <- c('Age','CountryCitizen','CountryLive','EmploymentField','EmploymentStatus','ExpectedEarning','Gender','HasDebt','HasFinancialDependents','HoursLearning','Income','IsUnderEmployed','JobRoleInterest','LanguageAtHome','MoneyForLearning','MonthsProgramming','SchoolDegree','SchoolMajor')
+data <- df[,columns]
+```
+
+# 2: Create Themes for Infographic
+
+The theme is named after greate Mamba. You can find the original place of this theme at here:
+
+http://www.nba.com/lakers/multimedia/121205kobe30Kinfographic
+
+```{r,message=FALSE,warning=FALSE}
+kobe_theme <-function() {
+  theme(
+    plot.background = element_rect(fill = "#E2E2E3", colour = "#E2E2E3"),
+    panel.background = element_rect(fill = "#E2E2E3"),
+    panel.background = element_rect(fill = "white"),
+    axis.text = element_text(colour = "#E7A922", family = "Impact"),
+    plot.title = element_text(colour = "#552683", face = "bold", size = 18, vjust = 1, family = "Impact"),
+    axis.title = element_text(colour = "#552683", face = "bold", size = 13, family = "Impact"),
+    panel.grid.major.x = element_line(colour = "#E7A922"),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    strip.text = element_text(family = "Impact", colour = "white"),
+    strip.background = element_rect(fill = "#E7A922"),
+    axis.ticks = element_line(colour = "#E7A922")
+  )
+}
+```
+
+
+# 3.Prepare all plots you want to put into the infographic
+
+Next, what you need to do is to prepare all required infograph in ggplot. Once all plots are ready to take off, you can show off your artist side in the following chapter. (Sadly I have poor art-related genetic stuff in my body.)
+
+```{r,message=FALSE,warning=FALSE}
+Age <- sqldf('SELECT Age, count(Age) as Count from data group by Age order by Count desc')
+
+Plot_Age <- ggplot(Age,aes(x = Age,y = Count))+geom_area(fill = "#552683")+kobe_theme()+ylab("Count") + xlab("Age")+ggtitle('Age Count for New Coder')
+
+CountryLive <- sqldf('SELECT CountryLive, count(CountryLive) as Count from data group by CountryLive order by Count desc')[1:20,]
+
+Plot_coun <- ggplot(CountryLive,aes(x=reorder(CountryLive,Count),y=Count))+geom_bar(stat = "identity", fill = "#552683")+kobe_theme()+theme(axis.text.x = element_text(angle = 45, hjust = 1))+xlab('Country')+ylab('Count')+ggtitle('Country Live Counts')+coord_flip()
+
+Efield <-sqldf('SELECT EmploymentField,count(EmploymentField) as Count from data group by EmploymentField order by Count desc')[1:15,]
+
+Plot_Efield <- ggplot(Efield,aes(x=reorder(EmploymentField,Count),y=Count))+geom_bar(stat = "identity", fill = "#552683")+kobe_theme()+theme(axis.text.x = element_text(angle = 45, hjust = 1))+xlab('Employment Field')+ylab('Count')+ggtitle('Employment Field Counts')+coord_flip()
+
+EStatus <-sqldf('SELECT EmploymentStatus,count(EmploymentStatus) as Count from data group by EmploymentStatus order by Count desc')
+
+Plot_Estatus <- ggplot(EStatus,aes(x=reorder(EmploymentStatus,Count),y=Count))+geom_bar(stat = "identity", fill = "#552683")+kobe_theme()+theme(axis.text.x = element_text(angle = 45, hjust = 1))+xlab('Employment Status')+ylab('Count')+ggtitle('Employment Status Counts')+coord_flip()
+
+Gender <- sqldf('select Gender, count(Gender) as Count from data group by Gender')[2:6,]
+Gender$fraction<- Gender$Count / sum(Gender$Count)
+Gender<- Gender[order(Gender$fraction), ]
+Gender$ymax = cumsum(Gender$fraction)
+Gender$ymin = c(0, head(Gender$ymax, n=-1))
+
+GPlot <- ggplot(Gender, aes(fill=Gender, ymax=ymax, ymin=ymin, xmax=4, xmin=3)) +
+     geom_rect() +
+     coord_polar(theta="y") +
+     xlim(c(0, 4)) +
+     labs(title="Proportion of Gender")+kobe_theme()
+
+EEarning <- sqldf('select ExpectedEarning, count(ExpectedEarning) as Count from data group by ExpectedEarning')
+EPlot <- ggplot(EEarning,aes(x=ExpectedEarning,y=Count))+geom_area(fill = "#552683")+xlab('Expected Earning')+ylab('Count')+ggtitle('Expected Earning of New Coder')+kobe_theme()
+
+L_plot<-qplot(data$HoursLearning, geom = 'histogram',fill=I("#552683"))+xlab('Hours Learning')+ggtitle('Hours Learning Distribution') +kobe_theme()
+I_Plot<-qplot(data$Income, geom = 'histogram',fill=I("#552683"))+xlab('Income')+ggtitle('Current Income Distribution') +kobe_theme()
+
+
+M_Plot<- qplot(data$MonthsProgramming, geom = 'histogram',fill=I("#552683"))+xlab('Programming Experience')+ggtitle('Programming Experience Distribution') +kobe_theme()
+
+O_Plot<- qplot(data$MoneyForLearning, geom = 'histogram',fill=I("#552683"))+xlab('Money for Learning')+ggtitle('Study Investment Distribution') +kobe_theme()
+
+Major <- sqldf('SELECT SchoolMajor, count(SchoolMajor) as Count from data group by SchoolMajor order by Count desc')[1:15,]
+major_p<- ggplot(Major,aes(x=reorder(SchoolMajor,Count),y=Count))+geom_bar(stat = "identity", fill = "#552683")+xlab('Major')+ylab('Count')+ggtitle('Count of frequent majors')+kobe_theme()+theme(axis.text.x = element_text(angle = 45, hjust = 1))+coord_flip()
+
+Degree <- sqldf('SELECT SchoolDegree, count(SchoolDegree) as Count from data group by SchoolDegree order by Count desc')[1:11,]
+degree_p<- ggplot(Degree,aes(x=reorder(SchoolDegree,Count),y=Count))+geom_bar(stat = "identity", fill = "#552683")+xlab('Degree')+ylab('Count')+ggtitle('Count of frequent majors')+kobe_theme()+theme(axis.text.x = element_text(angle = 45, hjust = 1))+coord_flip()
+
+
+```
+
+
+
+# 4.Generate Infographic
+
+```{r,message=FALSE,Warning=FALSE}
+grid.newpage() 
+pushViewport(viewport(layout = grid.layout(7, 2)))
+grid.rect(gp = gpar(fill = "#E2E2E3", col = "#E2E2E3"))
+grid.text("SURVEY FACT SHEET", y = unit(0.95, "npc"), gp = gpar(fontfamily = "Impact", col = "#E7A922", cex = 5.0))
+print(Plot_coun, vp = vplayout(2, 1))
+print(Plot_Age, vp = vplayout(2, 2))
+
+print(Plot_Efield, vp = vplayout(3, 1))
+print(Plot_Estatus, vp = vplayout(3, 2))
+
+print(GPlot,vp=vplayout(4,1))
+print(EPlot,vp=vplayout(4,2))
+
+print(L_plot,vp= vplayout(5,1))
+print(I_Plot,vp=vplayout(5,2))
+
+print(M_Plot,vp= vplayout(6,1))
+print(O_Plot,vp = vplayout(6,2))
+
+print(major_p, vp=vplayout(7,1))
+print(degree_p,vp=vplayout(7,2))
+
+
+grid.rect(gp = gpar(fill = "#E7A922", col = "#E7A922"), x = unit(0.5, "npc"), y = unit(0.90, "npc"), width = unit(1, "npc"), height = unit(0.05, "npc"))
+grid.text("INFO OF AUTHOR AND DATA SET", vjust = 0, hjust = 0, x = unit(0.01, "npc"), y = unit(0.91, "npc"), gp = gpar(fontfamily = "Impact", col = "#552683", cex = 1.3))
+grid.text(paste(
+  'AUTHOR',
+  'LANGUAGE',
+  'DATASET URL',
+  'DATE',
+   sep = "\n"), vjust = 0, hjust = 0, x = unit(0.01, "npc"), y = unit(0.88, "npc"), gp = gpar(fontfamily = "Impact", col = "#552683", cex = 1.2))
+grid.text(paste(
+  'JASON LIU',
+  'R STUDIO',
+  'https://www.kaggle.com/freecodecamp/2016-new-coder-survey-',
+  'November 15,2016',
+   sep = "\n"), vjust = 0, hjust = 0, x = unit(0.15, "npc"), y = unit(0.88, "npc"), gp = gpar(fontfamily = "Impact", col = "#552683", cex = 1.2))
+```
